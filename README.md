@@ -36,7 +36,7 @@ Travel Budget Tracker allows you to:
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/YOUR_USERNAME/travel-budget-tracker.git
+git clone https://github.com/alialmustafa233/travel-budget-tracker.git
 cd travel-budget-tracker
 ```
 
