@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✈️ Travel Budget Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c28;
+      --border: #2a2a3d;
+      --accent: #f5c842;
+      --accent2: #e8834a;
+      --text: #f0ede8;
+      --text-muted: #7a7a9a;
+      --success: #4caf7d;
+      --danger: #e85d75;
+      --radius: 16px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background decoration */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(245,200,66,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* HEADER */
+    header {
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: var(--text-muted); font-weight: 400; font-size: 1rem; margin-left: 8px; }
+
+    nav { display: flex; gap: 8px; }
+
+    .nav-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 100px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    /* MAIN */
+    main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; position: relative; z-index: 1; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* HERO */
+    .hero { text-align: center; padding: 60px 0 40px; }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em { color: var(--accent); font-style: normal; }
+
+    .hero p { color: var(--text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 36px; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background: #ffd84a; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,200,66,0.25); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--text-muted); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid rgba(232,93,117,0.3);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-danger:hover { background: var(--danger); color: white; }
+
+    .btn-edit {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid rgba(245,200,66,0.3);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-edit:hover { background: rgba(245,200,66,0.1); }
+
+    /* SECTION TITLE */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    /* SEARCH */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 100px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus { border-color: var(--accent); }
+    .search-bar input::placeholder { color: var(--text-muted); }
+
+    /* TRIP CARDS */
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .trip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trip-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .trip-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+
+    .trip-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+
+    .trip-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; }
+
+    .trip-flag { font-size: 1.5rem; }
+
+    .trip-dest { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .trip-dest strong { color: var(--text); }
+
+    .trip-dates { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 16px; }
+
+    .budget-bar-wrap { margin-bottom: 12px; }
+
+    .budget-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+    }
+
+    .budget-label span:last-child { color: var(--accent); font-weight: 600; }
+
+    .budget-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .budget-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.5s ease;
+      background: linear-gradient(90deg, var(--success), var(--accent));
+    }
+
+    .budget-fill.over { background: linear-gradient(90deg, var(--accent2), var(--danger)); }
+
+    .trip-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+    /* FORM MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .form-group select option { background: var(--surface2); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+
+    .error-msg { color: var(--danger); font-size: 0.8rem; margin-top: 12px; }
+
+    /* DETAIL PAGE */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .back-btn:hover { color: var(--text); }
+
+    .detail-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .detail-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .detail-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+    .detail-sub { color: var(--text-muted); margin-bottom: 24px; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .stat-box {
+      background: var(--surface2);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .stat-box .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-box .stat-val.danger { color: var(--danger); }
+
+    .stat-box .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* EXPENSES */
+    .expense-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .expense-item:hover { border-color: var(--border); }
+
+    .expense-cat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .expense-info { flex: 1; }
+    .expense-desc { font-weight: 500; font-size: 0.95rem; }
+    .expense-meta { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
+
+    .expense-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-right: 12px;
+    }
+
+    .expense-actions { display: flex; gap: 6px; }
+
+    /* CATEGORY BADGE */
+    .cat-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--surface2);
+      color: var(--text-muted);
+      margin-right: 6px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-family: 'Playfair Display', serif; color: var(--text); margin-bottom: 8px; }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error { border-color: var(--danger); color: var(--danger); }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+
+    @media (max-width: 600px) {
+      header { padding: 16px 20px; }
+      main { padding: 24px 16px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .trips-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">✈️ TravelTrack <span>Budget Manager</span></div>
+    <nav>
+      <button class="nav-btn active" onclick="showPage('trips-page')">My Trips</button>
+      <button class="nav-btn" onclick="showPage('about-page')">About</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- TRIPS PAGE -->
+    <div class="page active" id="trips-page">
+      <div class="hero">
+        <h1>Track Every <em>Adventure</em><br/>Without Breaking the Bank</h1>
+        <p>Plan your trips, log your expenses, and stay on budget — all in one place.</p>
+        <button class="btn-primary" onclick="openTripModal()">＋ Add New Trip</button>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Your Trips</h2>
+        <span id="trip-count" style="color:var(--text-muted);font-size:0.85rem;"></span>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="🔍  Search by name, destination or country..." oninput="handleSearch()" />
+      </div>
+
+      <div class="trips-grid" id="trips-grid">
+        <div class="loading">Loading your trips...</div>
+      </div>
+    </div>
+
+    <!-- DETAIL PAGE -->
+    <div class="page" id="detail-page">
+      <button class="back-btn" onclick="showPage('trips-page')">← Back to Trips</button>
+      <div id="detail-content"></div>
+    </div>
+
+    <!-- ABOUT PAGE -->
+    <div class="page" id="about-page">
+      <div style="max-width:600px;margin:60px auto;text-align:center;">
+        <div style="font-size:4rem;margin-bottom:20px;">🌍</div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:2.5rem;margin-bottom:16px;">Travel Budget Tracker</h1>
+        <p style="color:var(--text-muted);line-height:1.7;margin-bottom:24px;">
+          A full-stack application built with Node.js, Express, SQLite, and vanilla JavaScript.
+          Plan trips, track expenses by category, and monitor your budget in real time.
+        </p>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:left;">
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Tech Stack</p>
+          <p style="margin-bottom:6px;">🟨 <strong>Backend:</strong> Node.js + Express</p>
+          <p style="margin-bottom:6px;">🗄️ <strong>Database:</strong> SQLite (sql.js)</p>
+          <p style="margin-bottom:6px;">📄 <strong>API Docs:</strong> Swagger UI at /api-docs</p>
+          <p>🎨 <strong>Frontend:</strong> Vanilla JavaScript SPA</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- TRIP MODAL -->
+  <div class="modal-overlay" id="trip-modal">
+    <div class="modal">
+      <h2 id="trip-modal-title">New Trip</h2>
+      <input type="hidden" id="trip-id" />
+      <div class="form-group">
+        <label>Trip Name</label>
+        <input type="text" id="trip-name" placeholder="e.g. Summer in Paris" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Destination City</label>
+          <input type="text" id="trip-destination" placeholder="e.g. Paris" />
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" id="trip-country" placeholder="e.g. France" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="trip-start" />
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="trip-end" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Total Budget</label>
+          <input type="number" id="trip-budget" placeholder="e.g. 2000" min="1" />
+        </div>
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="trip-currency">
+            <option value="USD">USD $</option>
+            <option value="EUR">EUR €</option>
+            <option value="TRY">TRY ₺</option>
+            <option value="GBP">GBP £</option>
+            <option value="JPY">JPY ¥</option>
+          </select>
+        </div>
+      </div>
+      <div class="error-msg" id="trip-error"></div>
+      <div class="form-actions">
+        <button class="btn-primary" onclick="saveTrip()">Save Trip</button>
+        <button class="btn-secondary" onclick="closeModal('trip-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPENSE MODAL -->
+  <div class="modal-overlay" id="expense-modal">
+    <div class="modal">
+      <h2 id="expense-modal-title">Add Expense</h2>
+      <input type="hidden" id="expense-id" />
+      <input type="hidden" id="expense-trip-id" />
+      <div class="form-group">
+        <label>Category</label>
+        <select id="expense-category">
+          <option value="Food">🍕 Food</option>
+          <option value="Hotel">🏨 Hotel</option>
+          <option value="Transport">🚗 Transport</option>
+          <option value="Activities">🎯 Activities</option>
+          <option value="Shopping">🛍️ Shopping</option>
+          <option value="Other">📦 Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="expense-desc" placeholder="e.g. Dinner at Le Jules Verne" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Amount</label>
+          <input type="number" id="expense-amount" placeholder="e.g. 85.50" min="0.01" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="expense-date" />
+        </div>
+      </div>
+      <div class="error-msg" id="expense-error"></div>
+      <div class="form-actions">
+        <button class="btn-primary" onclick="saveExpense()">Save Expense</button>
+        <button class="btn-secondary" onclick="closeModal('expense-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const API = '';
+    let currentTripId = null;
+
+    // ===== NAVIGATION =====
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+
+      if (pageId === 'trips-page') {
+        loadTrips();
+        document.querySelector('.nav-btn').classList.add('active');
+      }
+    }
+
+    // ===== TOAST =====
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `show ${type}`;
+      setTimeout(() => t.className = '', 3000);
+    }
+
+    // ===== MODAL =====
+    function openTripModal(trip = null) {
+      document.getElementById('trip-id').value = trip ? trip.id : '';
+      document.getElementById('trip-name').value = trip ? trip.name : '';
+      document.getElementById('trip-destination').value = trip ? trip.destination : '';
+      document.getElementById('trip-country').value = trip ? trip.country : '';
+      document.getElementById('trip-start').value = trip ? trip.start_date : '';
+      document.getElementById('trip-end').value = trip ? trip.end_date : '';
+      document.getElementById('trip-budget').value = trip ? trip.budget : '';
+      document.getElementById('trip-currency').value = trip ? trip.currency : 'USD';
+      document.getElementById('trip-error').textContent = '';
+      document.getElementById('trip-modal-title').textContent = trip ? 'Edit Trip' : 'New Trip';
+      document.getElementById('trip-modal').classList.add('open');
+    }
+
+    function openExpenseModal(tripId, expense = null) {
+      document.getElementById('expense-id').value = expense ? expense.id : '';
+      document.getElementById('expense-trip-id').value = tripId;
+      document.getElementById('expense-category').value = expense ? expense.category : 'Food';
+      document.getElementById('expense-desc').value = expense ? expense.description : '';
+      document.getElementById('expense-amount').value = expense ? expense.amount : '';
+      document.getElementById('expense-date').value = expense ? expense.date : new Date().toISOString().split('T')[0];
+      document.getElementById('expense-error').textContent = '';
+      document.getElementById('expense-modal-title').textContent = expense ? 'Edit Expense' : 'Add Expense';
+      document.getElementById('expense-modal').classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) overlay.classList.remove('open');
+      });
+    });
+
+    // ===== CATEGORY ICONS =====
+    const catIcons = {
+      Food: '🍕', Hotel: '🏨', Transport: '🚗',
+      Activities: '🎯', Shopping: '🛍️', Other: '📦'
+    };
+
+    // ===== LOAD TRIPS =====
+    async function loadTrips(search = '') {
+      const url = search ? `/api/trips?search=${encodeURIComponent(search)}` : '/api/trips';
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        renderTrips(data.data || []);
+      } catch {
+        showToast('Failed to load trips', 'error');
+      }
+    }
+
+    function renderTrips(trips) {
+      const grid = document.getElementById('trips-grid');
+      const count = document.getElementById('trip-count');
+      count.textContent = `${trips.length} trip${trips.length !== 1 ? 's' : ''}`;
+
+      if (!trips.length) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="emoji">🗺️</div>
+            <h3>No trips yet</h3>
+            <p>Click "Add New Trip" to start planning your adventure!</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = trips.map(t => `
+        <div class="trip-card" onclick="openDetail(${t.id})">
+          <div class="trip-card-header">
+            <div class="trip-name">${t.name}</div>
+          </div>
+          <div class="trip-dest">📍 <strong>${t.destination}</strong>, ${t.country}</div>
+          <div class="trip-dates">📅 ${t.start_date} → ${t.end_date}</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-label">
+              <span>Budget</span>
+              <span>${t.currency} ${Number(t.budget).toLocaleString()}</span>
+            </div>
+            <div class="budget-bar"><div class="budget-fill" style="width:0%" data-tripid="${t.id}"></div></div>
+          </div>
+          <div class="trip-actions" onclick="event.stopPropagation()">
+            <button class="btn-edit" onclick="openTripModal(${JSON.stringify(t).replace(/"/g, '&quot;')})">Edit</button>
+            <button class="btn-danger" onclick="deleteTrip(${t.id})">Delete</button>
+          </div>
+        </div>`).join('');
+
+      // Load summaries for budget bars
+      trips.forEach(async t => {
+        try {
+          const res = await fetch(`/api/trips/${t.id}/summary`);
+          const data = await res.json();
+          const pct = Math.min((data.data.total / t.budget) * 100, 100);
+          const fill = document.querySelector(`.budget-fill[data-tripid="${t.id}"]`);
+          if (fill) {
+            fill.style.width = pct + '%';
+            if (data.data.total > t.budget) fill.classList.add('over');
+          }
+        } catch {}
+      });
+    }
+
+    function handleSearch() {
+      const q = document.getElementById('search-input').value.trim();
+      loadTrips(q);
+    }
+
+    // ===== SAVE TRIP =====
+    async function saveTrip() {
+      const id = document.getElementById('trip-id').value;
+      const body = {
+        name: document.getElementById('trip-name').value,
+        destination: document.getElementById('trip-destination').value,
+        country: document.getElementById('trip-country').value,
+        start_date: document.getElementById('trip-start').value,
+        end_date: document.getElementById('trip-end').value,
+        budget: document.getElementById('trip-budget').value,
+        currency: document.getElementById('trip-currency').value,
+      };
+
+      // Frontend validation
+      if (!body.name || !body.destination || !body.country || !body.start_date || !body.end_date || !body.budget) {
+        document.getElementById('trip-error').textContent = '⚠️ Please fill in all fields.';
+        return;
+      }
+
+      const url = id ? `/api/trips/${id}` : '/api/trips';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!data.success) {
+          document.getElementById('trip-error').textContent = '⚠️ ' + (data.errors || [data.message]).join(', ');
+          return;
+        }
+        closeModal('trip-modal');
+        showToast(id ? '✅ Trip updated!' : '✅ Trip created!');
+        loadTrips();
+      } catch {
+        document.getElementById('trip-error').textContent = '⚠️ Something went wrong.';
+      }
+    }
+
+    // ===== DELETE TRIP =====
+    async function deleteTrip(id) {
+      if (!confirm('Delete this trip and all its expenses?')) return;
+      try {
+        const res = await fetch(`/api/trips/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { showToast('🗑️ Trip deleted'); loadTrips(); }
+      } catch { showToast('Failed to delete', 'error'); }
+    }
+
+    // ===== DETAIL PAGE =====
+    async function openDetail(tripId) {
+      currentTripId = tripId;
+      showPage('detail-page');
+      document.getElementById('detail-content').innerHTML = '<div class="loading">Loading...</div>';
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      try {
+        const [tripRes, expRes, sumRes] = await Promise.all([
+          fetch(`/api/trips/${tripId}`),
+          fetch(`/api/trips/${tripId}/expenses`),
+          fetch(`/api/trips/${tripId}/summary`),
+        ]);
+        const trip = (await tripRes.json()).data;
+        const expenses = (await expRes.json()).data;
+        const summary = (await sumRes.json()).data;
+
+        const remaining = trip.budget - summary.total;
+        const pct = Math.min((summary.total / trip.budget) * 100, 100).toFixed(0);
+        const overBudget = summary.total > trip.budget;
+
+        document.getElementById('detail-content').innerHTML = `
+          <div class="detail-header">
+            <div class="detail-title">${trip.name}</div>
+            <div class="detail-sub">📍 ${trip.destination}, ${trip.country} &nbsp;|&nbsp; 📅 ${trip.start_date} → ${trip.end_date}</div>
+            <div class="stats-row">
+              <div class="stat-box">
+                <div class="stat-val">${trip.currency} ${Number(trip.budget).toLocaleString()}</div>
+                <div class="stat-label">Total Budget</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val ${overBudget ? 'danger' : ''}">${trip.currency} ${summary.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+                <div class="stat-label">Total Spent (${pct}%)</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val ${overBudget ? 'danger' : ''}">${trip.currency} ${Math.abs(remaining).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+                <div class="stat-label">${overBudget ? '⚠️ Over Budget' : 'Remaining'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-header">
+            <h2 class="section-title">Expenses</h2>
+            <button class="btn-primary" onclick="openExpenseModal(${tripId})">＋ Add Expense</button>
+          </div>
+
+          <div id="expense-list">
+            ${renderExpenses(expenses, trip.currency)}
+          </div>`;
+      } catch {
+        document.getElementById('detail-content').innerHTML = '<div class="empty-state"><div class="emoji">❌</div><h3>Failed to load trip</h3></div>';
+      }
+    }
+
+    function renderExpenses(expenses, currency) {
+      if (!expenses.length) {
+        return `<div class="empty-state">
+          <div class="emoji">💸</div>
+          <h3>No expenses yet</h3>
+          <p>Click "Add Expense" to start tracking your spending!</p>
+        </div>`;
+      }
+      return expenses.map(e => `
+        <div class="expense-item">
+          <div class="expense-cat-icon">${catIcons[e.category] || '📦'}</div>
+          <div class="expense-info">
+            <div class="expense-desc">${e.description}</div>
+            <div class="expense-meta"><span class="cat-badge">${e.category}</span>${e.date}</div>
+          </div>
+          <div class="expense-amount">${currency} ${Number(e.amount).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div class="expense-actions">
+            <button class="btn-edit" onclick="openExpenseModal(${e.trip_id}, ${JSON.stringify(e).replace(/"/g, '&quot;')})">Edit</button>
+            <button class="btn-danger" onclick="deleteExpense(${e.id})">Del</button>
+          </div>
+        </div>`).join('');
+    }
+
+    // ===== SAVE EXPENSE =====
+    async function saveExpense() {
+      const id = document.getElementById('expense-id').value;
+      const tripId = document.getElementById('expense-trip-id').value;
+      const body = {
+        trip_id: tripId,
+        category: document.getElementById('expense-category').value,
+        description: document.getElementById('expense-desc').value,
+        amount: document.getElementById('expense-amount').value,
+        date: document.getElementById('expense-date').value,
+      };
+
+      if (!body.description || !body.amount || !body.date) {
+        document.getElementById('expense-error').textContent = '⚠️ Please fill in all fields.';
+        return;
+      }
+
+      const url = id ? `/api/expenses/${id}` : '/api/expenses';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!data.success) {
+          document.getElementById('expense-error').textContent = '⚠️ ' + (data.errors || [data.message]).join(', ');
+          return;
+        }
+        closeModal('expense-modal');
+        showToast(id ? '✅ Expense updated!' : '✅ Expense added!');
+        openDetail(currentTripId);
+      } catch {
+        document.getElementById('expense-error').textContent = '⚠️ Something went wrong.';
+      }
+    }
+
+    // ===== DELETE EXPENSE =====
+    async function deleteExpense(id) {
+      if (!confirm('Delete this expense?')) return;
+      try {
+        const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) { showToast('🗑️ Expense deleted'); openDetail(currentTripId); }
+      } catch { showToast('Failed to delete', 'error'); }
+    }
+
+    // ===== INIT =====
+    loadTrips();
+  </script>
+</body>
+</html>
